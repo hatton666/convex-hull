@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/hatton666/convex-hull#readme",
   "dependencies": {
+    "lodash": "^4.17.4",
     "mathjs": "^3.20.1"
   }
 }
