@@ -1,14 +1,29 @@
 <html>
     <head>
-        <script type="text/javascript" src="js/script.js"></script>
-        <script type="text/javascript" src="js/script.js"></script>
+        <script type="text/javascript" src="js/index.js"></script>
+        <script type="text/javascript" src="node_modules/mathjs/dist/math.min.js"></script>
+        <script type="text/javascript" src="node_modules/lodash/lodash.min.js"></script>
     </head>
-    <body>
-        <h1>Acoperire poligonala</h1>
-        <canvas id="points" onclick="addNewDot();"></canvas>
+    <body onload="initCovexHull();" style="overflow:none;">
+        <h1 style="
+            padding-left:40px;
+            background-
+        ">Acoperire poligonala</h1>
+        <canvas id="points" onclick="addNewDot();" 
+            style="
+                width:98vw;
+                height:98vh;
+                border:3px solid black;
+                position:absolute;
+                top:0px;
+                left:0px;
+                right:0px;
+                opacity: 0.5;  
+            ">  
+        </canvas>
         <div id="messages">
-
         </div>
-        <div id="details"></div>
+        <div id="details"
+        ></div>
     </body>
 </html>
