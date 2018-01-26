@@ -142,6 +142,8 @@ async function recomputeConvexHull_Graham(){
             let wrongTurnPosition = true;
             wrongTurnPosition = getFirstClockwiseTurn(li);
             while (wrongTurnPosition != false){
+                revertToState(pointsIx.slice(0,pointsIx.length-1));
+                await drawLine(RED, li[wrongTurnPosition], li[wrongTurnPosition+1]);
                 
                 li.splice(wrongTurnPosition,1);
                 pointsIx.splice(wrongTurnPosition,1);
@@ -160,14 +162,19 @@ async function recomputeConvexHull_Graham(){
 
         for (let i=n-1; i>0; i-- ){
             if ( pointsIx.indexOf(i) == -1 || i==pointsIx[0]){
+                
+
                 li.push(dots[i]);
                 pointsIx.push(i);
+                
                 await drawLine(GREEN,li[li.length-2],li[li.length-1]);
                 saveState(pointsIx);
                 let wrongTurnPosition = true;
                 wrongTurnPosition = getFirstClockwiseTurn(li);
                 while (wrongTurnPosition != false){
-                    
+                    revertToState(pointsIx.slice(0,pointsIx.length-1));
+                    await drawLine(RED, li[wrongTurnPosition], li[wrongTurnPosition+1]);
+
                     li.splice(wrongTurnPosition,1);
                     pointsIx.splice(wrongTurnPosition,1);
                     if ( li.length == 2){
