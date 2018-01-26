@@ -106,7 +106,7 @@ function orderNodes(){
     putNumbers(dots);
 }
 
-function recomputeConvexHull_Graham(){
+async function recomputeConvexHull_Graham(){
     resetStates();
     revertToState("base");
     if ( dots.length > 2 ){
@@ -132,12 +132,12 @@ function recomputeConvexHull_Graham(){
         li.push(dots[1]);
         pointsIx.push(0);
         pointsIx.push(1);
-        drawLine(GREEN,dots[0],dots[1]);
+        await drawLine(GREEN,dots[0],dots[1]);
         saveState(pointsIx);
         for (let i=2; i< n; i++ ){
             li.push(dots[i]);
             pointsIx.push(i);
-            drawLine(GREEN,li[li.length-2],li[li.length-1]);
+            await drawLine(GREEN,li[li.length-2],li[li.length-1]);
             saveState(pointsIx);
             let wrongTurnPosition = true;
             wrongTurnPosition = getFirstClockwiseTurn(li);
@@ -152,7 +152,7 @@ function recomputeConvexHull_Graham(){
                     revertToState(pointsIx.slice(0,pointsIx.length-1));
                 }
                 
-                drawLine(GREEN, li[wrongTurnPosition-1], li[wrongTurnPosition]);
+                await drawLine(GREEN, li[wrongTurnPosition-1], li[wrongTurnPosition]);
                 saveState(pointsIx);
                 wrongTurnPosition = getFirstClockwiseTurn(li);
             }
@@ -162,7 +162,7 @@ function recomputeConvexHull_Graham(){
             if ( pointsIx.indexOf(i) == -1 || i==pointsIx[0]){
                 li.push(dots[i]);
                 pointsIx.push(i);
-                drawLine(GREEN,li[li.length-2],li[li.length-1]);
+                await drawLine(GREEN,li[li.length-2],li[li.length-1]);
                 saveState(pointsIx);
                 let wrongTurnPosition = true;
                 wrongTurnPosition = getFirstClockwiseTurn(li);
@@ -177,14 +177,14 @@ function recomputeConvexHull_Graham(){
                         revertToState(pointsIx.slice(0,pointsIx.length-1));
                     }
                     
-                    drawLine(GREEN, li[wrongTurnPosition-1], li[wrongTurnPosition]);
+                    await drawLine(GREEN, li[wrongTurnPosition-1], li[wrongTurnPosition]);
                     saveState(pointsIx);
                     wrongTurnPosition = getFirstClockwiseTurn(li);
                 }
             }
         }
 
-        drawLine(GREEN, li[li.length -1], li[0]);
+        await drawLine(GREEN, li[li.length -1], li[0]);
         saveState(pointsIx);
     }    
 
@@ -218,13 +218,13 @@ function fillRect(){
     ctx.fillRect(100, 0, 140, 100);
 }
 
-function drawLine(color, start, end){
+async function drawLine(color, start, end){
     ctx.beginPath();
     ctx.strokeStyle = color;
     ctx.moveTo(start[X],start[Y]);
     ctx.lineTo(end[X], end[Y]);
     ctx.stroke();
-
+    await sleep(1000);
 }
 
 function saveState( points ){
@@ -288,4 +288,8 @@ function removeElement(array, element){
         
     }
     return newArray;
+}
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
