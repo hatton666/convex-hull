@@ -1,0 +1,28 @@
+{
+  "name": "convex-hull-application",
+  "version": "1.0.0",
+  "description": "small aplication for Graham scan algorithm",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/hatton666/convex-hull.git"
+  },
+  "keywords": [
+    "graham",
+    "scan",
+    "convex",
+    "hull"
+  ],
+  "author": "Vlad Vartolomei",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/hatton666/convex-hull/issues"
+  },
+  "homepage": "https://github.com/hatton666/convex-hull#readme",
+  "dependencies": {
+    "mathjs": "^3.20.1"
+  }
+}
