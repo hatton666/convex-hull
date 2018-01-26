@@ -8,7 +8,7 @@ const GREEN = "#39b703";
 const RED = "#bc0006";
 
 var dots =[];
-
+dots.push([0,0,1]);
 var ctx, canvas;
 
 //viewport constants
@@ -45,33 +45,46 @@ function addNewDot(){
  * checks if new entry is in the current polligon or not
  */
 function recomputeConvexHull(){
-    if ( dots.length > 2 ){
-        let n = dots.length;
+    console.log(dots);
+    if ( dots.length > 3 ){
+        let n = dots.length-1;
         let m = 1;
         dots = _.orderBy(dots, [Y],['asc']);
+        dots = dots.sort((a,b) =>{
+            return a[Y]-b[Y];
+        });
+    
         console.log(dots);
-        //stop condition 
         dots[0] = dots[n];
 
-        for (let i=2; i< dots; i++ ){
+        for (let i=2; i< n; i++ ){
             let dot = dots[i];
+            console.log( math.det(math.matrix([dots[m-1], dots[m], dots[i]])) );
+            console.log(dots);
             while (
                 math.det(math.matrix([dots[m-1], dots[m], dots[i]])) <= 0
             ){
+                console.log("points "+(m-1)+","+m+","+i);
+                drawLine(RED, dots[m], dots[i]);
                 //TODO: plot yellow line
                 if (m >1 ){
                     m -=1;
                     continue;
                 }
-                else if( i == N)
+                else if( i == n)
                     break;
                 else
                     i += 1
+
+
             }
             m += 1;
             let temp = dots[m];
             dots[m] = dots[i];
             dots[i] = temp;
+
+            console.log(m,"m=");
+            console.log(dots,"dots=");
         }
     }    
 }
@@ -79,6 +92,15 @@ function recomputeConvexHull(){
 function fillRect(){
     ctx.fillRect(25, 25, 100, 100);
     ctx.fillRect(100, 0, 140, 100);
+}
+
+function drawLine(color, start, end){
+    ctx.beginPath();
+    ctx.strokeStyle = color;
+    ctx.moveTo(start[X],start[Y]);
+    ctx.lineTo(end[X], end[Y]);
+    ctx.stroke();
+
 }
 
 /**
