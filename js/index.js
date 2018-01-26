@@ -6,10 +6,13 @@ const Y=1;
 const YELLOW = "#f4bc42";
 const GREEN = "#39b703";
 const RED = "#bc0006";
+const BLACK = "#000000";
 
 var dots =[];
-dots.push([0,0,1]);
 var ctx, canvas;
+
+//state of drawing
+var imageData=[];
 
 //viewport constants
 var VW, VH;
@@ -38,13 +41,13 @@ function addNewDot(){
     dots.push(
         [mouse[X], mouse[Y], 1]
     );
-    recomputeConvexHull();
+    saveState(["base"]);
 }
 
 /**
  * checks if new entry is in the current polligon or not
  */
-function recomputeConvexHull(){
+function recomputeConvexHull_wiki(){
     console.log(dots);
     if ( dots.length > 3 ){
         let n = dots.length-1;
@@ -56,13 +59,16 @@ function recomputeConvexHull(){
     
         console.log(dots);
         dots[0] = dots[n];
+        let Li= [];
 
         for (let i=2; i< n; i++ ){
             let dot = dots[i];
             console.log( math.det(math.matrix([dots[m-1], dots[m], dots[i]])) );
+            console.log(ccw(dots[m-1], dots[m], dots[i]));
             console.log(dots);
+            
             while (
-                math.det(math.matrix([dots[m-1], dots[m], dots[i]])) <= 0
+                ccw(dots[m-1], dots[m], dots[i]) <= 0
             ){
                 console.log("points "+(m-1)+","+m+","+i);
                 drawLine(RED, dots[m], dots[i]);
@@ -73,8 +79,11 @@ function recomputeConvexHull(){
                 }
                 else if( i == n)
                     break;
-                else
+                else{
                     i += 1
+
+                }
+                    
 
 
             }
@@ -89,6 +98,121 @@ function recomputeConvexHull(){
     }    
 }
 
+function orderNodes(){
+    revertToState("base");
+    dots.sort((u,v) =>{
+        return u[X] != v[X] ? u[X]-v[X] : u[Y]-v[Y]
+    });
+    putNumbers(dots);
+}
+
+function recomputeConvexHull_Graham(){
+    resetStates();
+    revertToState("base");
+    if ( dots.length > 2 ){
+        let n = dots.length;
+        dots.sort((u,v) =>{
+            return u[X] != v[X] ? u[X]-v[X] : u[Y]-v[Y]
+        });
+        // dots.sort((u,v) =>{
+        //     let fiU = Math.atan(u[Y] /u[X]);
+        //     let fiV =  Math.atan(u[Y]/u[X]);
+        //     if (fiU< fiV){
+        //         return -1;
+        //     }
+        //     else if (fiU == fiV){
+        //         return 0;
+        //     }
+        //     return 1;
+        // });
+        putNumbers(dots);
+        saveState(["initial"]);
+        let li= [], pointsIx=[];
+        li.push(dots[0]);
+        li.push(dots[1]);
+        pointsIx.push(0);
+        pointsIx.push(1);
+        drawLine(GREEN,dots[0],dots[1]);
+        saveState(pointsIx);
+        for (let i=2; i< n; i++ ){
+            li.push(dots[i]);
+            pointsIx.push(i);
+            drawLine(GREEN,li[li.length-2],li[li.length-1]);
+            saveState(pointsIx);
+            let wrongTurnPosition = true;
+            wrongTurnPosition = getFirstClockwiseTurn(li);
+            while (wrongTurnPosition != false){
+                
+                li.splice(wrongTurnPosition,1);
+                pointsIx.splice(wrongTurnPosition,1);
+                if ( li.length == 2){
+                    revertToState("initial");
+                }
+                else{
+                    revertToState(pointsIx.slice(0,pointsIx.length-1));
+                }
+                
+                drawLine(GREEN, li[wrongTurnPosition-1], li[wrongTurnPosition]);
+                saveState(pointsIx);
+                wrongTurnPosition = getFirstClockwiseTurn(li);
+            }
+        }
+
+        for (let i=n-1; i>0; i-- ){
+            if ( pointsIx.indexOf(i) == -1 || i==pointsIx[0]){
+                li.push(dots[i]);
+                pointsIx.push(i);
+                drawLine(GREEN,li[li.length-2],li[li.length-1]);
+                saveState(pointsIx);
+                let wrongTurnPosition = true;
+                wrongTurnPosition = getFirstClockwiseTurn(li);
+                while (wrongTurnPosition != false){
+                    
+                    li.splice(wrongTurnPosition,1);
+                    pointsIx.splice(wrongTurnPosition,1);
+                    if ( li.length == 2){
+                        revertToState("initial");
+                    }
+                    else{
+                        revertToState(pointsIx.slice(0,pointsIx.length-1));
+                    }
+                    
+                    drawLine(GREEN, li[wrongTurnPosition-1], li[wrongTurnPosition]);
+                    saveState(pointsIx);
+                    wrongTurnPosition = getFirstClockwiseTurn(li);
+                }
+            }
+        }
+
+        drawLine(GREEN, li[li.length -1], li[0]);
+        saveState(pointsIx);
+    }    
+
+    return false;
+}
+
+function putNumbers(dots){
+    for (let i=0; i< dots.length; i++){
+        ctx.fillStyle = BLACK;
+        ctx.font = '30px serif';
+        ctx.textBaseline = 'bottom';
+        ctx.fillText(i, dots[i][X], dots[i][Y]);
+    }
+    
+}
+
+function getFirstClockwiseTurn( li ){
+    for  (let i=li.length-2; i>=1; i --){
+        if (ccw(li[i-1], li[i],li[i+1]) <= 0)
+            return i;
+    }
+    return false;
+}
+
+function ccw(p1, p2, p3){
+    return (p2[X] - p1[X])*(p3[Y] - p1[Y]) - (p2[Y] - p1[Y])*(p3[X] - p1[X]);
+}
+
 function fillRect(){
     ctx.fillRect(25, 25, 100, 100);
     ctx.fillRect(100, 0, 140, 100);
@@ -101,6 +225,30 @@ function drawLine(color, start, end){
     ctx.lineTo(end[X], end[Y]);
     ctx.stroke();
 
+}
+
+function saveState( points ){
+    let hash = "";
+    for(let i=0;i< points.length; i++)
+        hash = hash + points[i];
+
+    console.log("save hash -> "+hash);
+    imageData[hash] = ctx.getImageData(0,0,canvas.width,canvas.height);
+}
+
+function revertToState( points ){
+    let hash = "";
+    for(let i=0;i< points.length; i++)
+        hash = hash + points[i];
+
+    console.log("revert to hash -> "+hash);
+    ctx.putImageData(imageData[hash], 0, 0);
+}
+
+function resetStates(){
+    let baseState = imageData['base'];
+    imageData = [];
+    imageData['base'] = baseState;
 }
 
 /**
@@ -129,4 +277,15 @@ function drawDot(x,y,radius,color){
     ctx.arc(x, y, radius, 0, Math.PI *2, false);
     ctx.fillStyle = color;
     ctx.fill();
+}
+
+function removeElement(array, element){
+    let newArray = [];
+    for(let i=0;i<array.length; i++){
+        if ( i != element ){
+            newArray.push(array[i]);
+        }
+        
+    }
+    return newArray;
 }
