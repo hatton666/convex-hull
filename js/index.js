@@ -3,25 +3,26 @@ const X=0;
 const Y=1;
 
 //constant collors
-const YELLOW = "#f4bc42";
+const BLUE = "#073782";
 const GREEN = "#39b703";
 const RED = "#bc0006";
 const BLACK = "#000000";
 
-var dots =[];
+//viewport constants
+var VW, VH;
+
+//drawing helpers
 var ctx, canvas;
 
 //state of drawing
 var imageData=[];
+var dots =[];
 
-//viewport constants
-var VW, VH;
 
 //called on page load completed
 function initCovexHull(){
+    //init drawing context and traformation for mouse position
     canvas = document.getElementById("points");
- 
-
     checkIfCanvasSupported();
     ctx = canvas.getContext('2d');
 
@@ -37,7 +38,7 @@ function initCovexHull(){
  */
 function addNewDot(){
     let mouse = getMouse();
-    drawDot(mouse[X],mouse[Y], 5, YELLOW);
+    drawDot(mouse[X],mouse[Y], 5, BLUE);
     dots.push(
         [mouse[X], mouse[Y], 1]
     );
@@ -72,7 +73,6 @@ function recomputeConvexHull_wiki(){
             ){
                 console.log("points "+(m-1)+","+m+","+i);
                 drawLine(RED, dots[m], dots[i]);
-                //TODO: plot yellow line
                 if (m >1 ){
                     m -=1;
                     continue;
@@ -99,7 +99,7 @@ function recomputeConvexHull_wiki(){
 }
 
 function orderNodes(){
-    revertToState("base");
+    revertToState(["base"]);
     dots.sort((u,v) =>{
         return u[X] != v[X] ? u[X]-v[X] : u[Y]-v[Y]
     });
@@ -108,7 +108,7 @@ function orderNodes(){
 
 async function recomputeConvexHull_Graham(){
     resetStates();
-    revertToState("base");
+    revertToState(["base"]);
     if ( dots.length > 2 ){
         let n = dots.length;
         dots.sort((u,v) =>{
@@ -146,7 +146,7 @@ async function recomputeConvexHull_Graham(){
                 li.splice(wrongTurnPosition,1);
                 pointsIx.splice(wrongTurnPosition,1);
                 if ( li.length == 2){
-                    revertToState("initial");
+                    revertToState(["initial"]);
                 }
                 else{
                     revertToState(pointsIx.slice(0,pointsIx.length-1));
@@ -171,7 +171,7 @@ async function recomputeConvexHull_Graham(){
                     li.splice(wrongTurnPosition,1);
                     pointsIx.splice(wrongTurnPosition,1);
                     if ( li.length == 2){
-                        revertToState("initial");
+                        revertToState(["initial"]);
                     }
                     else{
                         revertToState(pointsIx.slice(0,pointsIx.length-1));
@@ -203,6 +203,7 @@ function putNumbers(dots){
 
 function getFirstClockwiseTurn( li ){
     for  (let i=li.length-2; i>=1; i --){
+        //math.det(math.matrix([li[i-1], li[i],li[i+1]]))
         if (ccw(li[i-1], li[i],li[i+1]) <= 0)
             return i;
     }
@@ -230,25 +231,32 @@ async function drawLine(color, start, end){
 function saveState( points ){
     let hash = "";
     for(let i=0;i< points.length; i++)
-        hash = hash + points[i];
+        hash = hash +"->"+ points[i];
 
-    console.log("save hash -> "+hash);
+    console.log("save hash'"+hash+"'");
     imageData[hash] = ctx.getImageData(0,0,canvas.width,canvas.height);
 }
 
 function revertToState( points ){
     let hash = "";
     for(let i=0;i< points.length; i++)
-        hash = hash + points[i];
+        hash = hash+"->" + points[i];
 
     console.log("revert to hash -> "+hash);
     ctx.putImageData(imageData[hash], 0, 0);
 }
 
+function resetCanvas(){
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    imageData=[];
+    dots =[];
+    return false;
+}
+
 function resetStates(){
-    let baseState = imageData['base'];
+    let baseState = imageData['->base'];
     imageData = [];
-    imageData['base'] = baseState;
+    imageData['->base'] = baseState;
 }
 
 /**
